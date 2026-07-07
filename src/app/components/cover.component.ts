@@ -116,6 +116,7 @@ import { WEDDING } from '../wedding-data';
         border: 2px solid rgba(244, 239, 227, 0.9);
         border-radius: 50%;
         opacity: 0;
+        will-change: transform, opacity;
         animation: ping 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
       }
       .ring:nth-child(2) {
@@ -130,12 +131,11 @@ import { WEDDING } from '../wedding-data';
         display: grid;
         place-items: center;
         color: #f4efe3;
-        background: rgba(20, 28, 18, 0.4);
+        background: rgba(20, 28, 18, 0.55);
         border: 1px solid rgba(244, 239, 227, 0.75);
         border-radius: 50%;
-        -webkit-backdrop-filter: blur(2px);
-        backdrop-filter: blur(2px);
         box-shadow: 0 6px 18px rgba(10, 16, 8, 0.4);
+        will-change: transform;
         animation: tap 2.4s ease-in-out infinite;
       }
       .dot svg {
@@ -152,12 +152,11 @@ import { WEDDING } from '../wedding-data';
         font-size: 0.66rem;
         color: rgba(245, 240, 225, 0.92);
         text-shadow: 0 1px 4px rgba(10, 16, 8, 0.6);
-        background: rgba(20, 28, 18, 0.28);
+        background: rgba(20, 28, 18, 0.45);
         border: 1px solid rgba(244, 239, 227, 0.45);
         border-radius: 999px;
         cursor: pointer;
-        -webkit-backdrop-filter: blur(3px);
-        backdrop-filter: blur(3px);
+        will-change: opacity;
         animation: breathe 2.4s ease-in-out infinite;
       }
 
@@ -171,12 +170,10 @@ import { WEDDING } from '../wedding-data';
         text-transform: uppercase;
         font-size: 0.62rem;
         color: rgba(244, 239, 227, 0.85);
-        background: rgba(20, 28, 18, 0.35);
+        background: rgba(20, 28, 18, 0.5);
         border: 1px solid rgba(244, 239, 227, 0.3);
         border-radius: 999px;
         cursor: pointer;
-        -webkit-backdrop-filter: blur(3px);
-        backdrop-filter: blur(3px);
       }
       .skip:hover {
         background: rgba(20, 28, 18, 0.5);

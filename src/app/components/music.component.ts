@@ -50,11 +50,9 @@ import { WEDDING } from '../wedding-data';
         border-radius: 50%;
         cursor: pointer;
         color: var(--gold);
-        background: rgba(244, 239, 227, 0.72);
+        background: rgba(244, 239, 227, 0.92);
         border: 1px solid var(--gold);
         box-shadow: 0 4px 18px rgba(42, 38, 32, 0.14);
-        -webkit-backdrop-filter: blur(6px);
-        backdrop-filter: blur(6px);
         transition:
           transform 0.35s ease,
           color 0.35s ease,
