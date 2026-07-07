@@ -212,22 +212,32 @@ export class MusicComponent implements AfterViewInit, OnDestroy {
     this.fadeTo(0, () => this.playerRef?.nativeElement.pause());
   }
 
-  /** Gently ramp the volume so the track eases in and out. */
+  /**
+   * Gently ramp the volume so the track eases in and out. Runs a FIXED number
+   * of steps and always fires `done` at the end — iOS ignores `audio.volume`
+   * (it's read-only there), so we must never gate completion on it actually
+   * reaching the target, or pause() would never run and the music can't stop.
+   */
   private fadeTo(target: number, done?: () => void): void {
     const audio = this.playerRef?.nativeElement;
     if (!audio) return;
     clearInterval(this.fadeTimer);
-    const step = (target - audio.volume) / 20 || target;
+    const steps = 12;
+    const from = audio.volume;
+    let i = 0;
     this.fadeTimer = setInterval(() => {
-      const next = audio.volume + step;
-      if ((step >= 0 && next >= target) || (step < 0 && next <= target)) {
-        audio.volume = Math.min(1, Math.max(0, target));
+      i++;
+      const v = from + (target - from) * (i / steps);
+      try {
+        audio.volume = Math.min(1, Math.max(0, v));
+      } catch {
+        /* some platforms disallow setting volume — ignore */
+      }
+      if (i >= steps) {
         clearInterval(this.fadeTimer);
         done?.();
-      } else {
-        audio.volume = Math.min(1, Math.max(0, next));
       }
-    }, 40);
+    }, 28);
   }
 
   ngOnDestroy(): void {

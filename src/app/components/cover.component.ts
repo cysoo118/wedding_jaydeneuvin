@@ -18,16 +18,22 @@ import { WEDDING } from '../wedding-data';
         <video
           #vid
           class="film"
-          [src]="w.cover.video"
+          [class.poised]="poised"
           muted
           playsinline
           webkit-playsinline
           disablePictureInPicture
           preload="auto"
-          (loadedmetadata)="seekPoster()"
+          (loadedmetadata)="warmPoster()"
+          (timeupdate)="onTime()"
           (ended)="reveal()"
           (error)="reveal()"
-        ></video>
+        >
+          <source [src]="w.cover.video" type="video/webm" />
+          @if (w.cover.videoFallback) {
+            <source [src]="w.cover.videoFallback" type="video/mp4" />
+          }
+        </video>
 
         @if (!started) {
           <!-- animated hint over the wax seal: tap here to open -->
@@ -85,9 +91,13 @@ import { WEDDING } from '../wedding-data';
         inset: 0;
         width: 100%;
         height: 100%;
-        /* contain = show the whole portrait clip; fills phones, centred + matted
-           on wide screens (responsive to any viewport) */
         object-fit: cover;
+        /* hidden until the poster frame is warmed, so the black intro never flashes */
+        opacity: 0;
+        transition: opacity 0.45s ease;
+      }
+      .film.poised {
+        opacity: 1;
       }
 
       /* ---- animated tap guide ---- */
@@ -227,6 +237,7 @@ export class CoverComponent implements OnInit, OnDestroy {
   w = WEDDING;
 
   started = false;
+  poised = false;
   opening = false;
   gone = false;
   private fallback?: ReturnType<typeof setTimeout>;
@@ -242,7 +253,30 @@ export class CoverComponent implements OnInit, OnDestroy {
     this.doc.body.classList.add('letter-sealed');
   }
 
-  /** Rest the paused video on the chosen frame (the sealed letter, past any black intro). */
+  /**
+   * Mobile browsers don't decode a paused video's frame until it actually
+   * plays, so seeking alone leaves a blank (green matte). Instead we play the
+   * clip muted, let it advance to the poster frame, then freeze there (onTime)
+   * — that reliably renders the sealed letter on phones.
+   */
+  warmPoster(): void {
+    const video = this.vidRef?.nativeElement;
+    if (!video || this.started) return;
+    video.muted = true;
+    video.play().catch(() => this.seekPoster()); // autoplay blocked → best-effort seek
+  }
+
+  /** Freeze on the poster frame once the warm-up reaches it. */
+  onTime(): void {
+    const video = this.vidRef?.nativeElement;
+    if (!video || this.started || this.poised) return;
+    if (video.currentTime >= (this.w.cover.posterTime || 0)) {
+      this.poised = true; // fades the video in
+      video.pause();
+    }
+  }
+
+  /** Fallback when autoplay is blocked: try to seek to the poster frame. */
   seekPoster(): void {
     const video = this.vidRef?.nativeElement;
     if (!video) return;
@@ -260,6 +294,7 @@ export class CoverComponent implements OnInit, OnDestroy {
   start(): void {
     if (this.started || this.opening) return;
     this.started = true;
+    this.poised = true; // make sure the video is visible
     const video = this.vidRef?.nativeElement;
     if (!video) {
       this.reveal();

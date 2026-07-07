@@ -80,6 +80,9 @@ export const WEDDING = {
   // first page is revealed. Drop the file in src/assets. Set video to '' to skip.
   cover: {
     video: 'assets/opening.webm',
+    // Fallback for browsers without WebM support (older iOS/Safari). Optional —
+    // set to '' if you only have one format.
+    videoFallback: 'assets/opening.mp4',
     // Seconds into the clip to rest on before it's tapped — pick the moment the
     // sealed letter is clearly visible (this skips any black intro). Playback
     // also begins here, so tapping never flashes back to black.
