@@ -76,6 +76,16 @@ export const WEDDING = {
 
   dressCode: 'Garden formal, in soft heritage tones',
 
+  // Intro cover video. Plays when a guest "opens" the invitation, then the
+  // first page is revealed. Drop the file in src/assets. Set video to '' to skip.
+  cover: {
+    video: 'assets/opening.mp4',
+    // Seconds into the clip to rest on before it's tapped — pick the moment the
+    // sealed letter is clearly visible (this skips any black intro). Playback
+    // also begins here, so tapping never flashes back to black.
+    posterTime: 0.5,
+  },
+
   // Background music. Drop an audio file into src/assets/music/ and point to
   // it here (it loops automatically). Set src to '' to hide the music button.
   music: {

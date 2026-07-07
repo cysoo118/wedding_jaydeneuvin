@@ -7,6 +7,7 @@ import { GalleryComponent } from './components/gallery.component';
 import { RsvpComponent } from './components/rsvp.component';
 import { FooterComponent } from './components/footer.component';
 import { MusicComponent } from './components/music.component';
+import { CoverComponent } from './components/cover.component';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ import { MusicComponent } from './components/music.component';
     RsvpComponent,
     FooterComponent,
     MusicComponent,
+    CoverComponent,
   ],
   template: `
     <app-hero />
@@ -30,6 +32,7 @@ import { MusicComponent } from './components/music.component';
     <app-rsvp />
     <app-footer />
     <app-music />
+    <app-cover />
   `,
 })
 export class AppComponent {}

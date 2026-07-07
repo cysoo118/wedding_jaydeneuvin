@@ -113,6 +113,16 @@ img {
   border: 1px solid var(--gold);
 }
 
+/* while the intro "letter" is still sealed, lock scrolling and hold the hero's
+   entrance animations at their start so the reveal plays when it's opened */
+body.letter-sealed {
+  overflow: hidden;
+}
+body.letter-sealed .hero .reveal,
+body.letter-sealed .hero .draw {
+  animation-play-state: paused !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
