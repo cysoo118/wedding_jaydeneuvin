@@ -1,0 +1,125 @@
+/* ============================================================
+   Heritage — global tokens & base
+   ============================================================ */
+:root {
+  /* palette */
+  --parchment: #f4efe3;
+  --parchment-deep: #ece4d2;
+  --pine: #21372b;
+  --pine-soft: #35513f;
+  --gold: #a67c3d;
+  --gold-light: #c6a765;
+  --oxblood: #6e2c33;
+  --stone: #8b8778;
+  --ink: #2a2620;
+
+  /* type */
+  --display: 'Cormorant Garamond', Georgia, serif;
+  --body: 'EB Garamond', Georgia, serif;
+  --label: 'Jost', system-ui, sans-serif;
+  --script: 'Pinyon Script', cursive;
+
+  /* rhythm */
+  --measure: 34rem;
+  --section-y: clamp(4.5rem, 10vw, 9rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--parchment);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 1.125rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* faint aged-paper grain */
+  background-image: radial-gradient(
+      circle at 18% 22%,
+      rgba(166, 124, 61, 0.05),
+      transparent 42%
+    ),
+    radial-gradient(circle at 82% 78%, rgba(110, 44, 51, 0.045), transparent 46%);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 500;
+  line-height: 1.08;
+  margin: 0;
+  color: var(--pine);
+}
+
+p {
+  margin: 0 0 1.1rem;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* shared utility: small letterspaced label */
+.eyebrow {
+  font-family: var(--label);
+  font-weight: 400;
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
+}
+
+/* ornamental hairline divider with a centred diamond */
+.rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  color: var(--gold);
+}
+.rule::before,
+.rule::after {
+  content: '';
+  height: 1px;
+  width: clamp(2.5rem, 12vw, 6rem);
+  background: linear-gradient(
+    to var(--dir, right),
+    transparent,
+    var(--gold) 60%
+  );
+}
+.rule::after {
+  --dir: left;
+}
+.rule .diamond {
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  border: 1px solid var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
