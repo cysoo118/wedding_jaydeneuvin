@@ -1,0 +1,284 @@
+<!doctype html>
+<!--
+  Source for src/assets/photobooth/mirror-frame.webp — the gilded baroque
+  mirror frame. It is drawn here as a greyscale HEIGHT MAP (white = raised),
+  then an SVG lighting filter turns that relief into embossed, polished gold.
+  Rendered once to a bitmap (see render-photobooth-art.mjs) so it looks the
+  same on every phone instead of depending on each browser's filter engine.
+
+  Tweak colours in the <feComponentTransfer> gradient map below.
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html, body { margin: 0; background: transparent; }
+      svg { display: block; }
+    </style>
+  </head>
+  <body>
+    <svg id="art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="1000" height="1500">
+      <defs>
+        <filter id="gild" x="-2%" y="-2%" width="104%" height="104%" color-interpolation-filters="sRGB">
+          <!-- greyscale -> relief, with a faint hammered grain -->
+          <feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="h0" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="grain" />
+          <feColorMatrix in="grain" type="matrix"
+            values="0 0 0 0 0
+                    0 0 0 0 0
+                    0 0 0 0 0
+                    0.10 0 0 0 -0.05" result="grainA" />
+          <feComposite in="h0" in2="grainA" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="h1" />
+          <feGaussianBlur in="h1" stdDeviation="1.2" result="h" />
+
+          <!-- raking light from the upper left, gradient-mapped to gold -->
+          <feDiffuseLighting in="h" surfaceScale="8" diffuseConstant="1.08" lighting-color="#ffffff" result="diff">
+            <feDistantLight azimuth="235" elevation="34" />
+          </feDiffuseLighting>
+          <feComponentTransfer in="diff" result="gold">
+            <feFuncR type="table" tableValues="0.10 0.26 0.47 0.67 0.83 0.94 1" />
+            <feFuncG type="table" tableValues="0.05 0.15 0.30 0.47 0.62 0.78 0.93" />
+            <feFuncB type="table" tableValues="0.03 0.07 0.14 0.24 0.35 0.52 0.76" />
+          </feComponentTransfer>
+
+          <!-- slow tonal drift, like old hand-laid leaf -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="3" result="drift0" />
+          <feColorMatrix in="drift0" type="matrix"
+            values="1 0 0 0 0
+                    1 0 0 0 0
+                    1 0 0 0 0
+                    0 0 0 0 1" result="drift" />
+          <feComponentTransfer in="drift" result="driftT">
+            <feFuncR type="linear" slope="0.5" intercept="0.72" />
+            <feFuncG type="linear" slope="0.5" intercept="0.70" />
+            <feFuncB type="linear" slope="0.5" intercept="0.68" />
+            <feFuncA type="linear" slope="0" intercept="1" />
+          </feComponentTransfer>
+          <feComposite in="gold" in2="driftT" operator="arithmetic" k1="1.04" k2="0" k3="0" k4="0" result="goldD" />
+
+          <!-- ambient occlusion: recesses go dark with a hint of red bole -->
+          <feGaussianBlur in="h0" stdDeviation="4.5" result="aoBlur" />
+          <feColorMatrix in="aoBlur" type="matrix"
+            values="0 0 0 1 0
+                    0 0 0 1 0
+                    0 0 0 1 0
+                    0 0 0 0 1" result="aoGrey" />
+          <feComponentTransfer in="aoGrey" result="ao">
+            <feFuncR type="table" tableValues="0.42 0.80 1 1" />
+            <feFuncG type="table" tableValues="0.28 0.72 1 1" />
+            <feFuncB type="table" tableValues="0.22 0.68 1 1" />
+          </feComponentTransfer>
+          <feComposite in="goldD" in2="ao" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="goldAo" />
+
+          <!-- tight specular glints -->
+          <feSpecularLighting in="h" surfaceScale="8" specularConstant="1.25" specularExponent="30" lighting-color="#fff0d2" result="spec">
+            <feDistantLight azimuth="235" elevation="44" />
+          </feSpecularLighting>
+          <feComposite in="goldAo" in2="spec" operator="arithmetic" k1="0" k2="1" k3="0.8" k4="0" result="lit" />
+          <feComposite in="lit" in2="SourceAlpha" operator="in" />
+        </filter>
+      </defs>
+      <g id="relief" filter="url(#gild)"></g>
+    </svg>
+
+    <script>
+      const NS = 'http://www.w3.org/2000/svg';
+      const relief = document.getElementById('relief');
+      const g = (v) => {
+        const c = Math.round(v * 255);
+        return `rgb(${c},${c},${c})`;
+      };
+      function el(tag, attrs, parent = relief) {
+        const e = document.createElementNS(NS, tag);
+        for (const k in attrs) e.setAttribute(k, attrs[k]);
+        parent.appendChild(e);
+        return e;
+      }
+
+      /* ---------------- the frame's centreline ---------------- */
+      // A cartouche: arched top, notched (concave) corners, softly waisted
+      // sides and a gently dipped base. Drawn clockwise from the top centre.
+      const C =
+        'M300 120 C 382 120 420 172 488 172 A 40 40 0 0 0 528 212 ' +
+        'C 520 400 520 560 528 748 A 40 40 0 0 0 488 788 ' +
+        'C 420 788 382 818 300 818 C 218 818 180 788 112 788 ' +
+        'A 40 40 0 0 0 72 748 C 80 560 80 400 72 212 ' +
+        'A 40 40 0 0 0 112 172 C 180 172 218 120 300 120 Z';
+
+      const probe = el('path', { d: C, fill: 'none' }, document.querySelector('defs'));
+      const total = probe.getTotalLength();
+      const STEP = 1.5;
+      const samples = [];
+      for (let s = 0; s <= total; s += STEP) {
+        const p = probe.getPointAtLength(s);
+        const a = probe.getPointAtLength(Math.max(0, s - 0.5));
+        const b = probe.getPointAtLength(Math.min(total, s + 0.5));
+        let tx = b.x - a.x, ty = b.y - a.y;
+        const len = Math.hypot(tx, ty) || 1;
+        tx /= len; ty /= len;
+        // clockwise in y-down space -> outward normal is (ty, -tx)
+        samples.push({ x: p.x, y: p.y, nx: ty, ny: -tx, s });
+      }
+      const offsetPath = (d) =>
+        'M' + samples.map((p) => `${(p.x + p.nx * d).toFixed(2)} ${(p.y + p.ny * d).toFixed(2)}`).join(' L') + ' Z';
+      const stroke = (d, width, grey, extra = {}) =>
+        el('path', {
+          d: offsetPath(d),
+          fill: 'none',
+          stroke: g(grey),
+          'stroke-width': width,
+          'stroke-linejoin': 'round',
+          ...extra,
+        });
+
+      /* ---------------- moulding profile (outside -> inside) ---------------- */
+      stroke(0, 46, 0.34); // base band
+      stroke(19.5, 5.5, 0.62); // outer rim bead
+      stroke(22.6, 1.4, 0.4); // outer arris
+      stroke(12.5, 7, 0.22); // cove (recess)
+      // carved darts across the cove
+      for (let i = 0; i < samples.length; i += 8) {
+        const p = samples[i];
+        el('line', {
+          x1: p.x + p.nx * 9.4, y1: p.y + p.ny * 9.4,
+          x2: p.x + p.nx * 15.6, y2: p.y + p.ny * 15.6,
+          stroke: g(0.6), 'stroke-width': 2.6, 'stroke-linecap': 'round',
+        });
+      }
+      stroke(1.5, 17, 0.8); // main torus
+      stroke(2.5, 8, 0.97); // torus crown
+      stroke(-9.5, 2.6, 0.28); // fillet groove
+      // pearl beading
+      for (let i = 0; i < samples.length; i += 7) {
+        const p = samples[i];
+        el('circle', { cx: p.x - p.nx * 14, cy: p.y - p.ny * 14, r: 3.2, fill: g(0.9) });
+      }
+      stroke(-20, 5, 0.6); // inner lip
+      stroke(-22.8, 1.2, 0.3); // sight edge
+
+      /* ---------------- ornament helpers ---------------- */
+      function group(transform) {
+        return el('g', { transform });
+      }
+      // scallop shell: hinge at (0,0), opening toward -y
+      function shell(parent, r, n, from, to) {
+        const pts = [];
+        for (let i = 0; i <= n; i++) {
+          const a = ((from + ((to - from) * i) / n) * Math.PI) / 180;
+          pts.push([Math.cos(a), Math.sin(a)]);
+        }
+        let d = `M0 0 L${pts[0][0] * r * 0.9} ${pts[0][1] * r * 0.9}`;
+        for (let i = 0; i < n; i++) {
+          const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+          const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+          const ml = Math.hypot(mx, my);
+          d += ` Q${(mx / ml) * r * 1.08} ${(my / ml) * r * 1.08} ${x2 * r * 0.9} ${y2 * r * 0.9}`;
+        }
+        d += ' Z';
+        el('path', { d, fill: g(0.55) }, parent);
+        for (let i = 0; i < n; i++) {
+          const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+          const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+          const ml = Math.hypot(mx, my);
+          el('line', {
+            x1: (mx / ml) * r * 0.18, y1: (my / ml) * r * 0.18,
+            x2: (mx / ml) * r * 0.98, y2: (my / ml) * r * 0.98,
+            stroke: g(0.95), 'stroke-width': r * 0.085, 'stroke-linecap': 'round',
+          }, parent);
+        }
+        el('ellipse', { cx: 0, cy: 0, rx: r * 0.26, ry: r * 0.16, fill: g(1) }, parent);
+      }
+      // C-scroll ending in a volute; drawn rightwards from the origin
+      function scroll(parent, s, w = 8) {
+        const d = `M0 0 C ${20 * s} ${-20 * s}, ${58 * s} ${-22 * s}, ${74 * s} ${-2 * s}
+                   C ${86 * s} ${13 * s}, ${78 * s} ${31 * s}, ${63 * s} ${29 * s}
+                   C ${51 * s} ${27 * s}, ${51 * s} ${13 * s}, ${61 * s} ${13 * s}`;
+        el('path', { d, fill: 'none', stroke: g(0.82), 'stroke-width': w * s, 'stroke-linecap': 'round' }, parent);
+        el('path', { d, fill: 'none', stroke: g(1), 'stroke-width': w * s * 0.38, 'stroke-linecap': 'round' }, parent);
+        el('circle', { cx: 62 * s, cy: 19 * s, r: 4.4 * s, fill: g(1) }, parent);
+      }
+      // lobed acanthus leaf along +x from the origin
+      function leaf(parent, s) {
+        const d = `M0 0 C ${14 * s} ${-15 * s}, ${30 * s} ${-17 * s}, ${42 * s} ${-10 * s}
+                   C ${46 * s} ${-19 * s}, ${58 * s} ${-21 * s}, ${64 * s} ${-12 * s}
+                   C ${70 * s} ${-19 * s}, ${82 * s} ${-19 * s}, ${86 * s} ${-10 * s}
+                   C ${93 * s} ${-12 * s}, ${101 * s} ${-7 * s}, ${106 * s} ${1 * s}
+                   C ${92 * s} ${5 * s}, ${76 * s} ${11 * s}, ${60 * s} ${11 * s}
+                   C ${40 * s} ${12 * s}, ${18 * s} ${10 * s}, 0 0 Z`;
+        el('path', { d, fill: g(0.72) }, parent);
+        el('path', {
+          d: `M${4 * s} ${0} C ${30 * s} ${2 * s}, ${62 * s} ${0}, ${102 * s} ${-1 * s}`,
+          fill: 'none', stroke: g(1), 'stroke-width': 2.4 * s, 'stroke-linecap': 'round',
+        }, parent);
+        for (const [x, y] of [[40, -8], [62, -10], [84, -8]]) {
+          el('path', {
+            d: `M${(x - 14) * s} ${1 * s} Q ${(x - 4) * s} ${(y + 4) * s} ${x * s} ${y * s}`,
+            fill: 'none', stroke: g(0.42), 'stroke-width': 1.6 * s, 'stroke-linecap': 'round',
+          }, parent);
+        }
+      }
+      function rosette(cx, cy, r) {
+        const p = group(`translate(${cx} ${cy})`);
+        el('circle', { cx: 0, cy: 0, r, fill: g(0.55) }, p);
+        for (let i = 0; i < 10; i++) {
+          el('ellipse', {
+            cx: 0, cy: -r * 0.5, rx: r * 0.24, ry: r * 0.44, fill: g(0.86),
+            transform: `rotate(${i * 36})`,
+          }, p);
+        }
+        el('circle', { cx: 0, cy: 0, r: r * 0.42, fill: g(0.6) }, p);
+        el('circle', { cx: 0, cy: 0, r: r * 0.3, fill: g(1) }, p);
+      }
+
+      /* ---------------- top crest ---------------- */
+      // leaves draping from the crest toward the corners
+      leaf(group('translate(352 118) rotate(10)'), 1.05);
+      leaf(group('translate(248 118) scale(-1 1) rotate(10)'), 1.05);
+      leaf(group('translate(410 136) rotate(22)'), 0.7);
+      leaf(group('translate(190 136) scale(-1 1) rotate(22)'), 0.7);
+      // flanking C-scrolls
+      scroll(group('translate(330 106) rotate(-14)'), 1.05, 11);
+      scroll(group('translate(270 106) scale(-1 1) rotate(-14)'), 1.05, 11);
+      // the shell itself
+      shell(group('translate(300 112)'), 66, 11, 196, 344);
+      // finial
+      el('ellipse', { cx: 300, cy: 120, rx: 30, ry: 13, fill: g(0.7) });
+      el('ellipse', { cx: 300, cy: 119, rx: 17, ry: 8, fill: g(1) });
+      el('ellipse', { cx: 300, cy: 42, rx: 9, ry: 12, fill: g(0.9) });
+      el('circle', { cx: 300, cy: 26, r: 5, fill: g(1) });
+      el('path', { d: 'M286 48 Q300 58 314 48', fill: 'none', stroke: g(0.95), 'stroke-width': 4, 'stroke-linecap': 'round' });
+
+      /* ---------------- bottom crest ---------------- */
+      leaf(group('translate(338 820) rotate(-8)'), 0.78);
+      leaf(group('translate(262 820) scale(-1 1) rotate(-8)'), 0.78);
+      scroll(group('translate(318 828) rotate(12) scale(1 -1)'), 0.7, 9);
+      scroll(group('translate(282 828) scale(-1 -1) rotate(12)'), 0.7, 9);
+      shell(group('translate(300 816)'), 44, 9, 18, 162);
+      el('ellipse', { cx: 300, cy: 866, rx: 7, ry: 9, fill: g(0.9) });
+      el('circle', { cx: 300, cy: 878, r: 4, fill: g(1) });
+
+      /* ---------------- corners & sides ---------------- */
+      rosette(523, 177, 21);
+      rosette(77, 177, 21);
+      rosette(523, 783, 21);
+      rosette(77, 783, 21);
+      // little fans on the waist of each side
+      shell(group('translate(66 480)'), 26, 7, 120, 240);
+      shell(group('translate(534 480)'), 26, 7, -60, 60);
+      el('ellipse', { cx: 52, cy: 480, rx: 7, ry: 10, fill: g(1) });
+      el('ellipse', { cx: 548, cy: 480, rx: 7, ry: 10, fill: g(1) });
+
+      /* ---------------- export the plate outline ---------------- */
+      // The satin plate behind the glass follows the centreline (it is hidden
+      // under the moulding), exported as a CSS polygon in percentages.
+      const poly = [];
+      const N = 140;
+      for (let i = 0; i < N; i++) {
+        const p = probe.getPointAtLength((total * i) / N);
+        poly.push(`${((p.x / 600) * 100).toFixed(2)}% ${((p.y / 900) * 100).toFixed(2)}%`);
+      }
+      window.platePolygon = `polygon(${poly.join(', ')})`;
+      window.ready = true;
+    </script>
+  </body>
+</html>

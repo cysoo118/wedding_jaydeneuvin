@@ -26,6 +26,27 @@ npm run build
 Deploy the contents of `dist/heritage-invite/browser/` to any static host
 (Netlify, Vercel, GitHub Pages, Azure Static Web Apps, etc.).
 
+## The photo-booth opening
+
+Guests land on a sealed, vertical blush envelope with your portrait in a
+foil-ringed oval. A tap swings the flap open in 3D, a gilded baroque mirror
+slides out of the pocket and settles on a crushed-velvet wall, engraved with
+your names and date. Tapping the mirror fires a camera flash, the names fade,
+and a photo strip feeds out of the booth slot and develops frame by frame
+(tap again to tuck it back in). "View the invitation" then fades the booth
+away to reveal the rest of the site below.
+
+- **Your photos:** replace the placeholders in `src/assets/photobooth/`:
+  - `couple.jpg` — the envelope portrait (upright, roughly 4:5; faces central).
+  - `booth-1.jpg`, `booth-2.jpg`, `booth-3.jpg` — the strip (landscape, ~4:3).
+    They print in black & white; set `photobooth.monochrome` to `false` for colour.
+- **Words:** `photobooth` in `src/app/wedding-data.ts` (headline, names, date,
+  strip caption, photo paths).
+- **Use the old video cover instead:** set `photobooth.enabled` to `false`.
+- The mirror frame is a pre-rendered image, drawn as code in
+  `tools/mirror-frame.html`. To re-tint or redraw it, edit that file and run
+  `node tools/render-photobooth-art.mjs` (needs Playwright + Python Pillow).
+
 ## Customize everything in one place
 
 Open **`src/app/wedding-data.ts`** and edit the names, date, venues, story,
@@ -61,6 +82,7 @@ src/app/
   app.component.ts       <- composes the sections
   reveal.directive.ts    <- scroll-in animation
   components/
+    photobooth.component.*   envelope -> mirror -> photo strip opening
     hero.component.ts        countdown.component.ts
     story.component.ts       celebration.component.ts
     gallery.component.ts     rsvp.component.ts

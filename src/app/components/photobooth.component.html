@@ -1,0 +1,164 @@
+@if (stage !== 'gone') {
+  <section
+    class="booth"
+    [class.is-sealed]="stage === 'sealed'"
+    [class.is-opening]="stage === 'opening'"
+    [class.is-open]="stage === 'open'"
+    [class.is-leaving]="stage === 'leaving'"
+    [class.revealed]="revealed"
+    [class.cta-ready]="ctaReady"
+    [style.--mono]="p.monochrome ? 1 : 0"
+    aria-label="Save the date"
+  >
+    <div class="velvet" aria-hidden="true"></div>
+    <div class="spot" aria-hidden="true"></div>
+    <div class="dust" aria-hidden="true">
+      @for (m of dust; track $index) {
+        <i
+          [style.left.%]="m.x"
+          [style.top.%]="m.y"
+          [style.width.px]="m.size"
+          [style.height.px]="m.size"
+          [style.--dx.px]="m.dx"
+          [style.animation-duration.s]="m.duration"
+          [style.animation-delay.s]="m.delay"
+        ></i>
+      }
+    </div>
+
+    @if (stage === 'sealed') {
+      <button class="env-hit" type="button" (click)="open()" aria-label="Open the envelope"></button>
+    }
+
+    <div class="stage">
+      @if (stage === 'sealed' || stage === 'opening') {
+        <!-- inside of the envelope -->
+        <div class="env-piece env-back" aria-hidden="true"></div>
+      }
+
+      <!-- the mirror (waits inside the envelope until it opens) -->
+      <div class="mirror" [attr.aria-hidden]="stage === 'sealed' || stage === 'opening' ? 'true' : null">
+        <div class="plate">
+          <div class="copy" [attr.aria-hidden]="revealed ? 'true' : null">
+            <p class="kicker">{{ p.headline }}</p>
+            <h1 class="names">
+              <span>{{ p.names[0] }}</span>
+              <span class="amp">&amp;</span>
+              <span>{{ p.names[1] }}</span>
+            </h1>
+            <p class="date">{{ p.date }}</p>
+            <span class="tap">Tap to reveal</span>
+          </div>
+
+          <div class="well">
+            <div class="strip-swing">
+              <div class="strip" [attr.aria-hidden]="revealed ? null : 'true'">
+                <div class="strip-caption">
+                  <span class="mono">{{ initials[0] }} &amp; {{ initials[1] }}</span>
+                  <span class="when">{{ p.stripCaption }}</span>
+                </div>
+                @for (src of p.strip; track src; let i = $index; let n = $count) {
+                  <!-- the bottom frame feeds out first, so it develops first -->
+                  <div class="shot" [style.--i]="n - 1 - i">
+                    <img [src]="src" [alt]="'Photo booth picture ' + (i + 1)" decoding="async" />
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="slot" aria-hidden="true"></div>
+          <div class="sheen" aria-hidden="true"></div>
+        </div>
+
+        <img class="frame" src="assets/photobooth/mirror-frame.webp" alt="" decoding="async" />
+
+        <button
+          #mirrorHit
+          class="mirror-hit"
+          type="button"
+          (click)="toggleStrip()"
+          [disabled]="stage !== 'open'"
+          [attr.aria-pressed]="revealed"
+          [attr.aria-label]="revealed ? 'Tuck the photo strip away' : 'Reveal our photo strip'"
+        ></button>
+      </div>
+
+      @if (stage === 'sealed' || stage === 'opening') {
+        <!-- the pocket: side folds + bottom fold -->
+        <div class="env-piece env-pocket" aria-hidden="true">
+          <div class="fold-wrap"><div class="fold l"></div></div>
+          <div class="fold-wrap r"><div class="fold r"></div></div>
+          <div class="fold-wrap b"><div class="fold b"></div></div>
+          <svg class="edges" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path
+              d="M0.2 99.8 L46.4 49.9 Q50 47.2 53.6 49.9 L99.8 99.8"
+              fill="none"
+              stroke="rgba(255,255,255,0.75)"
+              stroke-width="1"
+              vector-effect="non-scaling-stroke"
+            />
+            <path
+              d="M0 0.3 L51 54.4 M100 0.3 L49 54.4"
+              fill="none"
+              stroke="rgba(150,105,85,0.22)"
+              stroke-width="1"
+              vector-effect="non-scaling-stroke"
+            />
+          </svg>
+        </div>
+
+        <div class="env-piece env-light" aria-hidden="true"></div>
+
+        <!-- the top flap -->
+        <div class="env-piece env-shadow" aria-hidden="true"></div>
+        <div class="env-piece env-flap" aria-hidden="true">
+          <div class="flap">
+            <div class="face front">
+              <svg class="edges" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="pbFoil" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#f7e4b5" />
+                    <stop offset="0.35" stop-color="#b8874a" />
+                    <stop offset="0.55" stop-color="#f3dcab" />
+                    <stop offset="1" stop-color="#9a6a34" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M2.6 0 L50 95.2 L97.4 0"
+                  fill="none"
+                  stroke="url(#pbFoil)"
+                  stroke-width="1.3"
+                  vector-effect="non-scaling-stroke"
+                />
+              </svg>
+              <div class="oval">
+                <img [src]="p.couplePhoto" [alt]="p.names[0] + ' and ' + p.names[1]" />
+              </div>
+              <p class="monogram">
+                {{ initials[0] }}<span class="amp">&amp;</span>{{ initials[1] }}
+              </p>
+            </div>
+            <div class="face back"></div>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (stage === 'sealed' || stage === 'opening') {
+      <p class="open-hint" aria-hidden="true">Tap to open</p>
+    }
+
+    <div class="foot">
+      <button class="cta" type="button" (click)="enter()" [attr.tabindex]="ctaReady ? null : -1">
+        View the invitation
+        <svg viewBox="0 0 14 22" fill="none" aria-hidden="true">
+          <path d="M7 1 V19 M2 14 L7 20 L12 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      <p class="tag">{{ tag }}</p>
+    </div>
+
+    <div class="flash" aria-hidden="true"></div>
+  </section>
+}

@@ -76,8 +76,31 @@ export const WEDDING = {
 
   dressCode: 'Garden formal, in soft heritage tones',
 
-  // Intro cover video. Plays when a guest "opens" the invitation, then the
-  // first page is revealed. Drop the file in src/assets. Set video to '' to skip.
+  // Photo-booth save-the-date — the opening screen. A sealed envelope with your
+  // portrait opens to a gilded mirror; tapping the mirror prints a photo strip.
+  // Swap the photos in src/assets/photobooth/ (keep the names, or update the
+  // paths here). Set enabled: false to use the video cover below instead.
+  photobooth: {
+    enabled: true,
+    headline: 'We are getting married',
+    names: ['Jayden', 'Euvin'] as [string, string],
+    date: '12 · September · 2026',
+    // Shown in the oval on the envelope — a portrait (upright) photo works best.
+    couplePhoto: 'assets/photobooth/couple.jpg',
+    // The photo strip: 3 landscape-ish photos (4 also fit, a little smaller).
+    strip: [
+      'assets/photobooth/booth-1.jpg',
+      'assets/photobooth/booth-2.jpg',
+      'assets/photobooth/booth-3.jpg',
+    ],
+    stripCaption: '12 · 09 · 2026',
+    // Print everything in classic photo-booth black & white.
+    monochrome: true,
+  },
+
+  // Intro cover video (used only when photobooth.enabled is false). Plays when a
+  // guest "opens" the invitation, then the first page is revealed. Drop the file
+  // in src/assets. Set video to '' to skip.
   cover: {
     video: 'assets/opening.webm',
     // Fallback for browsers without WebM support (older iOS/Safari). Optional —
