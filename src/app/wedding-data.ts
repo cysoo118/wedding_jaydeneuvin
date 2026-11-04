@@ -85,9 +85,10 @@ export const WEDDING = {
     headline: 'We are getting married',
     names: ['Jayden', 'Euvin'] as [string, string],
     date: '12 · September · 2026',
-    // Shown in the oval on the envelope — a portrait (upright) photo works best.
+    // The files there now are labelled placeholders — save your photos over them.
+    // Shown in the oval on the envelope: upright 4:5, e.g. 800 x 1000 px.
     couplePhoto: 'assets/photobooth/couple.jpg',
-    // The photo strip: 3 landscape-ish photos (4 also fit, a little smaller).
+    // The photo strip, top to bottom: landscape ~4:3, e.g. 800 x 590 px.
     strip: [
       'assets/photobooth/booth-1.jpg',
       'assets/photobooth/booth-2.jpg',

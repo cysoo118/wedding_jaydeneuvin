@@ -1,7 +1,7 @@
 // Renders the photobooth artwork into src/assets/photobooth/.
 //
 //   node tools/render-photobooth-art.mjs                  # the gilded frame
-//   node tools/render-photobooth-art.mjs --placeholders   # + stand-in photos
+//   node tools/render-photobooth-art.mjs --placeholders   # + labelled placeholders
 //
 // --placeholders OVERWRITES couple.jpg and booth-*.jpg, so leave it off once
 // you have put your own photos in place.
@@ -13,7 +13,7 @@
 //   mirror-frame.webp   the gilded frame (transparent centre and surround)
 //   tools/mirror-plate.txt   the CSS clip-path polygon for the satin plate
 //                            (paste into photobooth.component.css → .plate)
-//   couple.jpg, booth-1..3.jpg   (only with --placeholders)
+//   couple.jpg, booth-1..3.jpg   labelled placeholders (only with --placeholders)
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -39,13 +39,12 @@ writeFileSync(join(here, 'mirror-plate.txt'), polygon + '\n');
 
 if (process.argv.includes('--placeholders')) {
   const photos = pathToFileURL(join(here, 'placeholder-photos.html')).href;
-  for (const scene of ['portrait', 'booth-1', 'booth-2', 'booth-3']) {
+  for (const scene of ['couple', 'booth-1', 'booth-2', 'booth-3']) {
     await page.goto('about:blank');
     await page.goto(`${photos}#${scene}`);
     await page.waitForFunction(() => window.ready === true);
-    const name = scene === 'portrait' ? 'couple' : scene;
-    await page.locator('#art').screenshot({ path: join(out, `${name}.jpg`), type: 'jpeg', quality: 84 });
-    console.log('wrote', join(out, `${name}.jpg`));
+        await page.locator('#art').screenshot({ path: join(out, `${scene}.jpg`), type: 'jpeg', quality: 84 });
+    console.log('wrote', join(out, `${scene}.jpg`));
   }
 }
 await browser.close();

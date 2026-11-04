@@ -36,10 +36,20 @@ and a photo strip feeds out of the booth slot and develops frame by frame
 (tap again to tuck it back in). "View the invitation" then fades the booth
 away to reveal the rest of the site below.
 
-- **Your photos:** replace the placeholders in `src/assets/photobooth/`:
-  - `couple.jpg` — the envelope portrait (upright, roughly 4:5; faces central).
-  - `booth-1.jpg`, `booth-2.jpg`, `booth-3.jpg` — the strip (landscape, ~4:3).
-    They print in black & white; set `photobooth.monochrome` to `false` for colour.
+- **Your photos:** `src/assets/photobooth/` ships with labelled grey
+  placeholders. Save your photos over them with the same file names:
+
+  | File | Where it shows | Shape | Suggested size |
+  | --- | --- | --- | --- |
+  | `couple.jpg` | oval on the envelope | upright 4:5, faces centred (edges are cropped to the oval) | 800 × 1000 px |
+  | `booth-1.jpg` | top frame of the strip | landscape ~4:3 | 800 × 590 px |
+  | `booth-2.jpg` | middle frame | landscape ~4:3 | 800 × 590 px |
+  | `booth-3.jpg` | bottom frame | landscape ~4:3 | 800 × 590 px |
+
+  Photos are cropped to fit, so other sizes work too. They print in black &
+  white; set `photobooth.monochrome` to `false` for colour. Keep each file
+  under ~300 KB so the page opens quickly. Using different names or `.png`/
+  `.webp`? Update the paths in `photobooth` in `wedding-data.ts`.
 - **Words:** `photobooth` in `src/app/wedding-data.ts` (headline, names, date,
   strip caption, photo paths).
 - **Use the old video cover instead:** set `photobooth.enabled` to `false`.
