@@ -85,24 +85,17 @@
       </div>
 
       @if (stage === 'sealed' || stage === 'opening') {
-        <!-- the pocket: side folds + bottom fold -->
+        <!-- the pocket: one embossed sheet with a V-shaped mouth -->
         <div class="env-piece env-pocket" aria-hidden="true">
-          <div class="fold-wrap"><div class="fold l"></div></div>
-          <div class="fold-wrap r"><div class="fold r"></div></div>
-          <div class="fold-wrap b"><div class="fold b"></div></div>
+          <div class="pocket">
+            <img class="paper" src="assets/photobooth/envelope-body.webp" alt="" fetchpriority="high" />
+          </div>
           <svg class="edges" viewBox="0 0 100 100" preserveAspectRatio="none">
             <path
-              d="M0.2 99.8 L46.4 49.9 Q50 47.2 53.6 49.9 L99.8 99.8"
+              d="M0 0.2 L50 40 L100 0.2"
               fill="none"
-              stroke="rgba(255,255,255,0.75)"
-              stroke-width="1"
-              vector-effect="non-scaling-stroke"
-            />
-            <path
-              d="M0 0.3 L51 54.4 M100 0.3 L49 54.4"
-              fill="none"
-              stroke="rgba(150,105,85,0.22)"
-              stroke-width="1"
+              stroke="rgba(255,255,255,0.8)"
+              stroke-width="1.2"
               vector-effect="non-scaling-stroke"
             />
           </svg>
@@ -110,36 +103,33 @@
 
         <div class="env-piece env-light" aria-hidden="true"></div>
 
-        <!-- the top flap -->
+        <!-- the diagonal flap -->
         <div class="env-piece env-shadow" aria-hidden="true"></div>
         <div class="env-piece env-flap" aria-hidden="true">
           <div class="flap">
             <div class="face front">
+              <img class="paper" src="assets/photobooth/envelope-flap.webp" alt="" fetchpriority="high" />
+              <!-- the paper edge catching the light, with its shade just inside -->
               <svg class="edges" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="pbFoil" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="#f7e4b5" />
-                    <stop offset="0.35" stop-color="#b8874a" />
-                    <stop offset="0.55" stop-color="#f3dcab" />
-                    <stop offset="1" stop-color="#9a6a34" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M2.6 0 L50 95.2 L97.4 0"
-                  fill="none"
-                  stroke="url(#pbFoil)"
-                  stroke-width="1.3"
-                  vector-effect="non-scaling-stroke"
-                />
+                <path d="M100.5 37.2 L-0.5 98.1" fill="none" stroke="rgba(120,100,76,0.25)" stroke-width="2.5" vector-effect="non-scaling-stroke" />
+                <path d="M100.5 37.5 L-0.5 98.4" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="1.3" vector-effect="non-scaling-stroke" />
               </svg>
-              <div class="oval">
-                <img [src]="p.couplePhoto" [alt]="p.names[0] + ' and ' + p.names[1]" />
-              </div>
-              <p class="monogram">
-                {{ initials[0] }}<span class="amp">&amp;</span>{{ initials[1] }}
-              </p>
+              @if (p.envelopePhoto) {
+                <div class="oval">
+                  <img [src]="p.couplePhoto" [alt]="p.names[0] + ' and ' + p.names[1]" />
+                </div>
+              }
             </div>
             <div class="face back"></div>
+          </div>
+        </div>
+
+        <!-- gold wax seal (pops off as the envelope opens) -->
+        <div class="env-piece env-seal" aria-hidden="true">
+          <div class="seal">
+            <img src="assets/photobooth/wax-seal.webp" alt="" />
+            <span class="seal-mono"><span>{{ initials[0] }}</span><span>{{ initials[1] }}</span></span>
+            <span class="seal-glint"></span>
           </div>
         </div>
       }

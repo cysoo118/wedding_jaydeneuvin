@@ -28,8 +28,10 @@ Deploy the contents of `dist/heritage-invite/browser/` to any static host
 
 ## The photo-booth opening
 
-Guests land on a sealed, vertical blush envelope with your portrait in a
-foil-ringed oval. A tap swings the flap open in 3D, a gilded baroque mirror
+Guests land on a sealed, vertical ivory envelope of deeply embossed flowers,
+closed with a diagonal flap and a gold wax seal bearing your initials (and,
+optionally, your portrait in a pressed oval). A tap pops the seal, swings the
+flap open in 3D, and a gilded baroque mirror
 slides out of the pocket and settles on a crushed-velvet wall, engraved with
 your names and date. Tapping the mirror fires a camera flash, the names fade,
 and a photo strip feeds out of the booth slot and develops frame by frame
@@ -52,9 +54,13 @@ away to reveal the rest of the site below.
   `.webp`? Update the paths in `photobooth` in `wedding-data.ts`.
 - **Words:** `photobooth` in `src/app/wedding-data.ts` (headline, names, date,
   strip caption, photo paths).
+- **Plain envelope (seal only, no portrait):** set `photobooth.envelopePhoto`
+  to `false`.
 - **Use the old video cover instead:** set `photobooth.enabled` to `false`.
-- The mirror frame is a pre-rendered image, drawn as code in
-  `tools/mirror-frame.html`. To re-tint or redraw it, edit that file and run
+- The embossed paper, the wax seal and the mirror frame are pre-rendered
+  images, drawn as code in `tools/envelope-paper.html`, `tools/wax-seal.html`
+  and `tools/mirror-frame.html` (the seal's initials are live text, so they
+  follow the names). To re-tint or redraw them, edit those files and run
   `node tools/render-photobooth-art.mjs` (needs Playwright + Python Pillow).
 
 ## Customize everything in one place

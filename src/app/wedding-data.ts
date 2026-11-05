@@ -86,8 +86,10 @@ export const WEDDING = {
     names: ['Jayden', 'Euvin'] as [string, string],
     date: '12 · September · 2026',
     // The files there now are labelled placeholders — save your photos over them.
-    // Shown in the oval on the envelope: upright 4:5, e.g. 800 x 1000 px.
+    // Shown in an oval on the envelope flap: upright 4:5, e.g. 800 x 1000 px.
     couplePhoto: 'assets/photobooth/couple.jpg',
+    // false = a plain embossed envelope with just the gold wax seal.
+    envelopePhoto: true,
     // The photo strip, top to bottom: landscape ~4:3, e.g. 800 x 590 px.
     strip: [
       'assets/photobooth/booth-1.jpg',
