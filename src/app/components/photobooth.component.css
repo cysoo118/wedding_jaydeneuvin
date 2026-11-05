@@ -21,6 +21,7 @@
   --sw: min(calc(var(--ew) * 0.26), calc(var(--eh) * 0.12)); /* wax seal */
   --tex-w: max(var(--ew), calc(var(--eh) * 0.4615)); /* paper texture (900 x 1950) */
   --mono: 1; /* 1 = black & white photos, 0 = colour */
+  --d: 3.1s; /* the seal's glow & gold drawing, before the flap opens */
 
   /* ---- palette ---- */
   --paper: #ebe6dc;
@@ -205,8 +206,8 @@
 }
 .is-opening .env-piece.env-light {
   animation:
-    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) both,
-    fade-out 0.45s ease forwards;
+    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) var(--d) both,
+    fade-out 0.45s ease var(--d) forwards;
 }
 
 /* --- the diagonal flap: soft cast shadow + a two-sided 3D flap --- */
@@ -440,33 +441,175 @@
 }
 
 /* ------------------------------------------------------------------
-   The opening sequence (all timings relative to the tap)
-     0.0–1.3s  envelope pulls back           (env-zoom)
-     0.55–1.75 flap swings up and over       (flap-open)
-     1.6–2.65  mirror slides out of the pocket
-     2.5–3.6   envelope drops away, mirror settles centre stage
+   The opening sequence (timings from the tap; D = --d = 3.1s)
+     0.0–1.0   the seal glows white-gold, light blooms behind it
+     0.7–1.6   light runs out along the flap edge
+     1.0–2.8   gold traces itself over the embossed flowers, then fades
+     2.85      the seal lifts away
+     D+0–1.3   envelope pulls back           (env-zoom)
+     D+.55–1.75 flap swings up; warm light floods out of the envelope
+     D+1.6–2.65 mirror slides out through the light
+     D+2.5–3.6 envelope drops away, mirror settles, a soft warm flash
    ------------------------------------------------------------------ */
 .is-opening .env-piece {
   animation:
-    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) both,
-    env-away 1.1s cubic-bezier(0.55, 0, 0.8, 0.35) 2.5s forwards;
+    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) var(--d) both,
+    env-away 1.1s cubic-bezier(0.55, 0, 0.8, 0.35) calc(var(--d) + 2.5s) forwards;
 }
 .is-opening .env-shadow {
   animation:
-    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) both,
-    fade-out 0.5s ease 0.55s forwards;
+    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) var(--d) both,
+    fade-out 0.5s ease calc(var(--d) + 0.55s) forwards;
 }
 .is-opening .env-flap {
   animation:
-    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) both,
-    flap-under 0s linear 1.15s forwards,
-    env-away 1.1s cubic-bezier(0.55, 0, 0.8, 0.35) 2.5s forwards;
+    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) var(--d) both,
+    flap-under 0s linear calc(var(--d) + 1.15s) forwards,
+    env-away 1.1s cubic-bezier(0.55, 0, 0.8, 0.35) calc(var(--d) + 2.5s) forwards;
 }
 .is-opening .flap {
-  animation: flap-open 1.2s cubic-bezier(0.5, 0.05, 0.35, 1) 0.55s both;
+  animation: flap-open 1.2s cubic-bezier(0.5, 0.05, 0.35, 1) calc(var(--d) + 0.55s) both;
 }
 .is-opening .seal {
-  animation: seal-off 0.6s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+  animation: seal-off 0.6s cubic-bezier(0.3, 0, 0.2, 1) calc(var(--d) - 0.25s) both;
+}
+
+/* 1 · the seal glows */
+.seal-bloom {
+  position: absolute;
+  z-index: -1;
+  inset: -70%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 246, 214, 0.95) 0%, rgba(255, 214, 130, 0.55) 30%, rgba(255, 196, 110, 0) 62%);
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+}
+.seal-hot {
+  position: absolute;
+  inset: 13%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffdf4 0%, #fff3cf 45%, rgba(255, 228, 160, 0.4) 75%, rgba(255, 228, 160, 0) 100%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+.is-opening .seal-bloom {
+  animation: bloom calc(var(--d) - 0.1s) cubic-bezier(0.3, 0, 0.3, 1) both;
+}
+.is-opening .seal-hot {
+  animation: hot calc(var(--d) - 0.2s) ease both;
+}
+.is-opening .seal img {
+  animation: seal-bright calc(var(--d) - 0.2s) ease both;
+}
+.is-opening .seal::before,
+.is-opening .seal-glint {
+  display: none;
+}
+
+/* 2 · light runs along the flap edge from the seal */
+.edge-run {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.edge-run path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+  opacity: 0;
+}
+.edge-run .halo {
+  stroke: rgba(255, 210, 120, 0.4);
+  stroke-width: 1.6;
+}
+.edge-run .core {
+  stroke: #fff4cf;
+  stroke-width: 0.35;
+}
+.is-opening .edge-run path {
+  animation:
+    run 0.95s cubic-bezier(0.4, 0, 0.2, 1) 0.65s forwards,
+    fade-out 0.6s ease 2.5s forwards;
+}
+
+/* 3 · gold traces the embossed flowers, spreading out from the seal */
+.gold-wrap {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 74%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, #000 74%, transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 0 0;
+  mask-size: 0 0;
+  -webkit-mask-position: calc(var(--ew) * 0.2) calc(var(--eh) * 0.549);
+  mask-position: calc(var(--ew) * 0.2) calc(var(--eh) * 0.549);
+}
+.gold-wrap {
+  /* gold-on-white art: multiply keeps the gold and drops the white */
+  mix-blend-mode: multiply;
+}
+.is-opening .gold-wrap {
+  animation:
+    trace 1.9s cubic-bezier(0.45, 0, 0.3, 1) 0.95s both,
+    gold-fade 0.9s ease 2.45s both;
+}
+
+/* 4 · warm light floods out of the envelope as the flap lifts */
+.env-burst {
+  z-index: 2;
+  opacity: 0;
+}
+.burst-glow {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  width: 130%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #fffdf6 0%, #fff2d2 10%, rgba(255, 222, 160, 0.9) 22%, rgba(255, 200, 120, 0.5) 40%, rgba(255, 190, 110, 0) 64%);
+}
+.burst-rays {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 260%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(from 0deg, rgba(255, 238, 196, 0.7) 0deg 2.5deg, rgba(255, 238, 196, 0) 2.5deg 9deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, rgba(0, 0, 0, 0.6) 22%, transparent 48%);
+  mask-image: radial-gradient(circle, #000 0%, rgba(0, 0, 0, 0.6) 22%, transparent 48%);
+  mix-blend-mode: screen;
+}
+.is-opening .env-piece.env-burst {
+  animation:
+    env-zoom 1.3s cubic-bezier(0.65, 0, 0.35, 1) var(--d) both,
+    burst 2.6s ease calc(var(--d) + 0.75s) both,
+    env-away 1.1s cubic-bezier(0.55, 0, 0.8, 0.35) calc(var(--d) + 2.5s) forwards;
+}
+.is-opening .burst-rays {
+  animation: spin 6s linear calc(var(--d) + 0.75s) both;
+}
+
+/* 5 · a soft warm flash as the mirror settles */
+.warm-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 39;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, #fffaf0 0%, rgba(255, 238, 205, 0.85) 40%, rgba(255, 225, 190, 0.5) 100%);
+}
+.is-opening .warm-flash {
+  animation: warm-flash 1.4s ease calc(var(--d) + 2.45s) both;
 }
 
 /* ------------------------------------------------------------------
@@ -482,7 +625,7 @@
   will-change: transform;
 }
 .is-opening .mirror {
-  animation: mirror-rise 3.6s both;
+  animation: mirror-rise 3.6s var(--d) both;
 }
 .is-open .mirror,
 .is-leaving .mirror {
@@ -833,6 +976,51 @@
 }
 
 /* ------------------------------------------------------------------
+   The petal card (after the mirror)
+   ------------------------------------------------------------------ */
+.petal-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  animation: card-in 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s both;
+}
+.past-mirror .stage {
+  animation: stage-out 0.8s ease forwards;
+}
+.foot {
+  z-index: 25;
+}
+.past-mirror .cta {
+  color: #6b3a2a;
+  text-shadow: none;
+}
+.past-mirror .tag {
+  color: rgba(120, 70, 50, 0.6);
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(5%) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes stage-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+/* ------------------------------------------------------------------
    Keyframes
    ------------------------------------------------------------------ */
 @keyframes stage-in {
@@ -873,7 +1061,7 @@
 }
 @keyframes flap-under {
   to {
-    z-index: 2;
+    z-index: 1;
   }
 }
 @keyframes fade-out {
@@ -959,6 +1147,110 @@
   }
   10% {
     opacity: 0.68;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  80% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+@keyframes hot {
+  0%,
+  10% {
+    opacity: 0;
+  }
+  35%,
+  88% {
+    opacity: 0.88;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+@keyframes seal-bright {
+  0% {
+    filter: none;
+  }
+  35%,
+  100% {
+    filter: brightness(1.3) saturate(0.75) drop-shadow(0 0 calc(var(--sw) * 0.12) rgba(255, 220, 140, 0.9));
+  }
+}
+@keyframes run {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+@keyframes trace {
+  0% {
+    opacity: 1;
+    -webkit-mask-size: 0 0;
+    mask-size: 0 0;
+    -webkit-mask-position: calc(var(--ew) * 0.2) calc(var(--eh) * 0.549);
+    mask-position: calc(var(--ew) * 0.2) calc(var(--eh) * 0.549);
+  }
+  100% {
+    opacity: 1;
+    -webkit-mask-size: calc(var(--eh) * 2.8) calc(var(--eh) * 2.8);
+    mask-size: calc(var(--eh) * 2.8) calc(var(--eh) * 2.8);
+    -webkit-mask-position: calc(var(--ew) * 0.2 - var(--eh) * 1.4) calc(var(--eh) * 0.549 - var(--eh) * 1.4);
+    mask-position: calc(var(--ew) * 0.2 - var(--eh) * 1.4) calc(var(--eh) * 0.549 - var(--eh) * 1.4);
+  }
+}
+@keyframes gold-fade {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes burst {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.7);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(25deg) scale(1.1);
+  }
+}
+@keyframes warm-flash {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.6;
   }
   100% {
     opacity: 0;
@@ -1079,9 +1371,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .booth {
+    --d: 0s;
+  }
   .dust,
   .sheen,
-  .flash {
+  .flash,
+  .warm-flash,
+  .gold-wrap,
+  .edge-run,
+  .env-burst,
+  .seal-bloom,
+  .seal-hot {
     display: none;
   }
   /* durations are already zeroed globally; drop the delays too */

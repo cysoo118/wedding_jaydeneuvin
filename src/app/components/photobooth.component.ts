@@ -9,8 +9,14 @@ import {
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { WEDDING } from '../wedding-data';
+import { PetalHeartComponent } from './petal-heart.component';
 
-type Stage = 'sealed' | 'opening' | 'open' | 'leaving' | 'gone';
+type Stage = 'sealed' | 'opening' | 'open' | 'petals' | 'leaving' | 'gone';
+
+/** Length of the seal's glow & gold drawing (keep in step with --d in the CSS). */
+const PRELUDE_MS = 3100;
+/** The envelope-to-mirror sequence that follows it. */
+const OPENING_MS = 3700;
 
 interface Mote {
   x: number;
@@ -24,12 +30,15 @@ interface Mote {
 /**
  * Photo-booth save-the-date.
  *
- *  1. A sealed, vertical envelope with the couple's portrait in an oval.
- *  2. Tap -> the flap swings open, a gilded mirror slides out of the pocket
- *     and settles on a velvet wall, engraved with the couple's names.
+ *  1. A sealed, embossed envelope closed with a gold wax seal.
+ *  2. Tap -> the seal glows, gold traces the embossed flowers, the seal lifts,
+ *     the flap swings open in a burst of warm light and a gilded mirror slides
+ *     out of the pocket onto a velvet wall, engraved with the couple's names.
  *  3. Tap the mirror -> camera flash, the names fade and a photo strip feeds
  *     out of the booth slot and develops. Tap again to tuck it back in.
- *  4. "View the invitation" fades the booth away to reveal the rest of the site.
+ *  4. "Continue" -> a save-the-date card with a heart of rose petals; brushing
+ *     them away uncovers the date, then petals rain down.
+ *  5. "View the invitation" fades the booth away to reveal the rest of the site.
  *
  * Content comes from WEDDING.photobooth in wedding-data.ts. Motion is pure CSS
  * (see photobooth.component.css); this class only moves between stages.
@@ -37,6 +46,7 @@ interface Mote {
 @Component({
   selector: 'app-photobooth',
   standalone: true,
+  imports: [PetalHeartComponent],
   templateUrl: './photobooth.component.html',
   styleUrl: './photobooth.component.css',
 })
@@ -48,6 +58,8 @@ export class PhotoboothComponent implements OnInit, OnDestroy {
   stage: Stage = 'sealed';
   revealed = false;
   ctaReady = false;
+  /** True once the guest has moved on from the mirror to the petal card. */
+  pastMirror = false;
 
   /** Gold motes drifting in the spotlight (positions fixed per load). */
   readonly dust: Mote[] = Array.from({ length: 26 }, (_, i) => {
@@ -66,6 +78,7 @@ export class PhotoboothComponent implements OnInit, OnDestroy {
   });
 
   @ViewChild('mirrorHit') private mirrorHit?: ElementRef<HTMLButtonElement>;
+  @ViewChild(PetalHeartComponent) private petalHeart?: PetalHeartComponent;
 
   private timers: ReturnType<typeof setTimeout>[] = [];
   private pace = 1;
@@ -92,18 +105,24 @@ export class PhotoboothComponent implements OnInit, OnDestroy {
     if (reduce?.matches) this.pace = 0.05;
   }
 
+  get ctaLabel(): string {
+    return this.stage === 'open' && this.p.petals.enabled ? 'Continue' : 'View the invitation';
+  }
+
   /** Tap the envelope. */
   open(): void {
     if (this.stage !== 'sealed') return;
     this.stage = 'opening';
-    this.later(3700, () => {
+    this.later(PRELUDE_MS + OPENING_MS, () => {
       this.stage = 'open';
       // Render the enabled mirror button first, then hand it the focus the
       // (now removed) envelope button had — so keyboard users carry on.
       this.cdr.detectChanges();
       this.mirrorHit?.nativeElement.focus({ preventScroll: true });
       // Offer the way on even if nobody taps the mirror.
-      this.later(7000, () => (this.ctaReady = true));
+      this.later(7000, () => {
+        if (this.stage === 'open') this.ctaReady = true;
+      });
     });
   }
 
@@ -111,7 +130,36 @@ export class PhotoboothComponent implements OnInit, OnDestroy {
   toggleStrip(): void {
     if (this.stage !== 'open') return;
     this.revealed = !this.revealed;
-    if (this.revealed) this.later(3400, () => (this.ctaReady = true));
+    if (this.revealed)
+      this.later(3400, () => {
+        if (this.stage === 'open') this.ctaReady = true;
+      });
+  }
+
+  /** The call to action: on to the petal card, or into the invitation. */
+  next(): void {
+    if (this.stage === 'open' && this.p.petals.enabled) this.toPetals();
+    else this.enter();
+  }
+
+  /** Swap the mirror for the save-the-date card with the petal heart. */
+  private toPetals(): void {
+    this.stage = 'petals';
+    this.pastMirror = true;
+    this.ctaReady = false;
+    this.cdr.detectChanges();
+    this.petalHeart?.focusHint();
+    // in case nobody brushes the petals, offer the way on after a while
+    this.later(15000, () => {
+      if (this.stage === 'petals') this.ctaReady = true;
+    });
+  }
+
+  /** The petals have been brushed away and the details are showing. */
+  petalsOpened(): void {
+    this.later(1600, () => {
+      if (this.stage === 'petals') this.ctaReady = true;
+    });
   }
 
   /** Fade the booth away and hand over to the invitation below. */

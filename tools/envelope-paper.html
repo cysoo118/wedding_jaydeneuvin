@@ -4,6 +4,8 @@
   deep floral emboss. Flowers, leaves and vines are drawn as a greyscale
   HEIGHT MAP (white = raised); an SVG lighting filter then turns that relief
   into soft-lit paper. Two compositions: #body (the pocket) and #flap.
+  #body-lines / #flap-lines replay the same layout as glowing gold outlines
+  (transparent), which the envelope traces in light when the seal is tapped.
   Rendered by render-photobooth-art.mjs.
 -->
 <html>
@@ -61,6 +63,28 @@
           </feSpecularLighting>
           <feComposite in="paperAo" in2="spec" operator="arithmetic" k1="0" k2="1" k3="0.55" k4="0" />
         </filter>
+        <!-- gold outline mode: shapes are drawn blue (they hide what is behind
+             them, like the emboss does) with red outlines; only red survives,
+             becoming a crisp gilt line under a warm halo -->
+        <filter id="goldline" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
+          <feColorMatrix in="SourceGraphic" type="matrix"
+            values="0 0 0 0 0
+                    0 0 0 0 0
+                    0 0 0 0 0
+                    1.4 0 0 0 0" result="lineA" />
+          <feFlood flood-color="#a8792b" />
+          <feComposite in2="lineA" operator="in" result="core" />
+          <feGaussianBlur in="core" stdDeviation="3.4" result="b" />
+          <feColorMatrix in="b" type="matrix"
+            values="0 0 0 0 0.98
+                    0 0 0 0 0.78
+                    0 0 0 0 0.38
+                    0 0 0 1.5 0" result="glow" />
+          <feMerge>
+            <feMergeNode in="glow" />
+            <feMergeNode in="core" />
+          </feMerge>
+        </filter>
       </defs>
       <g id="relief" filter="url(#emboss)"></g>
     </svg>
@@ -69,15 +93,31 @@
       const NS = 'http://www.w3.org/2000/svg';
       const W = 900, H = 1950;
       const scene = location.hash.slice(1) || 'body';
-      let seed = scene === 'flap' ? 917 : 331;
+      const LINES = scene.endsWith('-lines');
+      let seed = scene.startsWith('flap') ? 917 : 331;
       const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
       const between = (a, b) => a + rnd() * (b - a);
       const relief = document.getElementById('relief');
+      const defs = document.querySelector('defs');
       const g = (v) => {
         const c = Math.round(v * 255);
         return `rgb(${c},${c},${c})`;
       };
+      const LINE = '#ff0000', HIDE = '#0000ff';
       function el(tag, attrs, parent = relief) {
+        if (LINES && parent !== defs && parent.tagName !== 'clipPath' && tag !== 'g' && tag !== 'clipPath') {
+          // outline mode: filled shapes become gilt outlines; of the strokes
+          // only vines and midribs (data-keep) survive; ground and dots go
+          const skip = () => document.createElementNS(NS, tag);
+          if (tag === 'rect') return skip();
+          const filled = attrs.fill && attrs.fill !== 'none';
+          if (filled) {
+            if (tag === 'circle' && attrs.r < 9) return skip();
+            attrs = { ...attrs, fill: HIDE, stroke: LINE, 'stroke-width': 2.3, 'stroke-linejoin': 'round' };
+          } else if (attrs['data-keep']) {
+            attrs = { ...attrs, stroke: LINE, 'stroke-width': 2 };
+          } else return skip();
+        }
         const e = document.createElementNS(NS, tag);
         for (const k in attrs) e.setAttribute(k, attrs[k]);
         parent.appendChild(e);
@@ -87,7 +127,6 @@
 
       // flat ground
       el('rect', { x: -60, y: -60, width: W + 120, height: H + 120, fill: g(0.3) });
-      const defs = document.querySelector('defs');
       let clipId = 0;
 
       /* ---------------- motifs ---------------- */
@@ -143,8 +182,8 @@
         const veins = el('g', { 'clip-path': `url(#${id})` }, parent);
         el('path', {
           d: `M ${0.02 * L} 0 Q ${0.5 * L} ${bend * 1.1} ${0.97 * L} ${bend * 1.58}`,
-          fill: 'none', stroke: g(0.86), 'stroke-width': L * 0.028, 'stroke-linecap': 'round',
-        }, veins);
+          fill: 'none', stroke: g(0.86), 'stroke-width': L * 0.028, 'stroke-linecap': 'round', 'data-keep': 1,
+        }, LINES ? parent : veins);
         for (let i = 1; i <= 7; i++) {
           const t = i / 8.2;
           const mx = t * L, my = bend * (t * 1.5);
@@ -184,7 +223,7 @@
         const mx = (b.x + near.x) / 2 + between(-70, 70), my = (b.y + near.y) / 2 + between(-70, 70);
         el('path', {
           d: `M ${b.x} ${b.y} Q ${mx} ${my} ${near.x} ${near.y}`,
-          fill: 'none', stroke: g(0.62), 'stroke-width': 7, 'stroke-linecap': 'round',
+          fill: 'none', stroke: g(0.62), 'stroke-width': 7, 'stroke-linecap': 'round', 'data-keep': 1,
         }, vines);
       }
       // leaves sprouting from each bloom, plus a few buds
@@ -215,6 +254,12 @@
         blooms.push({ x, y, r: 45, sprig: true });
       }
       for (const b of blooms) if (!b.sprig) flower(grp(`translate(${b.x} ${b.y})`), b.r, 5, between(0, 72));
+
+      if (LINES) {
+        relief.setAttribute('filter', 'url(#goldline)');
+        document.documentElement.style.background = 'transparent';
+        document.body.style.background = 'transparent';
+      }
 
       window.ready = true;
     </script>

@@ -13,6 +13,8 @@
 //   mirror-frame.webp      the gilded frame (transparent centre and surround)
 //   envelope-body.webp     embossed floral paper for the envelope pocket
 //   envelope-flap.webp     ...and a different composition for the flap
+//   envelope-*-gold.webp   the same layouts as gold outlines on white, laid
+//                          over the paper with mix-blend-mode: multiply
 //   wax-seal.webp          the gold wax seal (initials are live text on top)
 //   couple.jpg, booth-1..3.jpg   labelled placeholders (only with --placeholders)
 // and tools/mirror-plate.txt, the CSS clip-path polygon for the mirror's
@@ -61,6 +63,8 @@ writeFileSync(join(here, 'mirror-plate.txt'), (await page.evaluate(() => window.
 // envelope paper (two compositions) and the wax seal
 await shoot('envelope-paper.html', 'body', join(out, 'envelope-body.png'));
 await shoot('envelope-paper.html', 'flap', join(out, 'envelope-flap.png'));
+await shoot('envelope-paper.html', 'body-lines', join(out, 'envelope-body-gold.png'), { alpha: true });
+await shoot('envelope-paper.html', 'flap-lines', join(out, 'envelope-flap-gold.png'), { alpha: true });
 await shoot('wax-seal.html', '', join(out, 'wax-seal.png'), { alpha: true });
 
 if (process.argv.includes('--placeholders')) {
@@ -75,4 +79,21 @@ await browser.close();
 toWebp(join(out, 'mirror-frame.png'), 88);
 toWebp(join(out, 'envelope-body.png'), 80);
 toWebp(join(out, 'envelope-flap.png'), 80);
+// Gold outlines: flattened onto white (multiply-blended in the page), 720px
+// wide — an alpha channel with a soft halo would cost ~6x the bytes.
+for (const name of ['envelope-body-gold', 'envelope-flap-gold']) {
+  const png = join(out, `${name}.png`);
+  execFileSync('python3', [
+    '-c',
+    `from PIL import Image; import os, sys
+src = sys.argv[1]
+im = Image.open(src).convert('RGBA')
+im = im.resize((720, round(720 * im.height / im.width)), Image.LANCZOS)
+bg = Image.new('RGBA', im.size, (255, 255, 255, 255)); bg.alpha_composite(im)
+bg.convert('RGB').save(src[:-4] + '.webp', 'WEBP', quality=74, method=6)
+os.remove(src)`,
+    png,
+  ]);
+  console.log('wrote', png.replace(/\.png$/, '.webp'));
+}
 toWebp(join(out, 'wax-seal.png'), 90);

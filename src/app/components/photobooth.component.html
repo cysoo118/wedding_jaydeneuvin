@@ -4,6 +4,8 @@
     [class.is-sealed]="stage === 'sealed'"
     [class.is-opening]="stage === 'opening'"
     [class.is-open]="stage === 'open'"
+    [class.is-petals]="stage === 'petals'"
+    [class.past-mirror]="pastMirror"
     [class.is-leaving]="stage === 'leaving'"
     [class.revealed]="revealed"
     [class.cta-ready]="ctaReady"
@@ -34,6 +36,11 @@
       @if (stage === 'sealed' || stage === 'opening') {
         <!-- inside of the envelope -->
         <div class="env-piece env-back" aria-hidden="true"></div>
+        <!-- warm light that floods out as the flap lifts -->
+        <div class="env-piece env-burst" aria-hidden="true">
+          <div class="burst-rays"></div>
+          <div class="burst-glow"></div>
+        </div>
       }
 
       <!-- the mirror (waits inside the envelope until it opens) -->
@@ -89,6 +96,9 @@
         <div class="env-piece env-pocket" aria-hidden="true">
           <div class="pocket">
             <img class="paper" src="assets/photobooth/envelope-body.webp" alt="" fetchpriority="high" />
+            <div class="gold-wrap">
+              <img class="paper" src="assets/photobooth/envelope-body-gold.webp" alt="" fetchpriority="low" />
+            </div>
           </div>
           <svg class="edges" viewBox="0 0 100 100" preserveAspectRatio="none">
             <path
@@ -109,6 +119,9 @@
           <div class="flap">
             <div class="face front">
               <img class="paper" src="assets/photobooth/envelope-flap.webp" alt="" fetchpriority="high" />
+              <div class="gold-wrap">
+                <img class="paper" src="assets/photobooth/envelope-flap-gold.webp" alt="" fetchpriority="low" />
+              </div>
               <!-- the paper edge catching the light, with its shade just inside -->
               <svg class="edges" viewBox="0 0 100 100" preserveAspectRatio="none">
                 <path d="M100.5 37.2 L-0.5 98.1" fill="none" stroke="rgba(120,100,76,0.25)" stroke-width="2.5" vector-effect="non-scaling-stroke" />
@@ -126,9 +139,18 @@
 
         <!-- gold wax seal (pops off as the envelope opens) -->
         <div class="env-piece env-seal" aria-hidden="true">
+          <!-- light running out along the flap edge from the seal -->
+          <svg class="edge-run" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path class="halo" d="M20 54.95 L101 24" pathLength="100" />
+            <path class="halo" d="M20 54.95 L-1 63" pathLength="100" />
+            <path class="core" d="M20 54.95 L101 24" pathLength="100" />
+            <path class="core" d="M20 54.95 L-1 63" pathLength="100" />
+          </svg>
           <div class="seal">
+            <span class="seal-bloom"></span>
             <img src="assets/photobooth/wax-seal.webp" alt="" />
             <span class="seal-mono"><span>{{ initials[0] }}</span><span>{{ initials[1] }}</span></span>
+            <span class="seal-hot"></span>
             <span class="seal-glint"></span>
           </div>
         </div>
@@ -139,9 +161,16 @@
       <p class="open-hint" aria-hidden="true">Tap to open</p>
     }
 
+    @if (p.petals.enabled && (stage === 'petals' || stage === 'leaving')) {
+      <!-- save-the-date card: brush the rose petals away to reveal the details -->
+      <div class="petal-scene">
+        <app-petal-heart (opened)="petalsOpened()" />
+      </div>
+    }
+
     <div class="foot">
-      <button class="cta" type="button" (click)="enter()" [attr.tabindex]="ctaReady ? null : -1">
-        View the invitation
+      <button class="cta" type="button" (click)="next()" [attr.tabindex]="ctaReady ? null : -1">
+        {{ ctaLabel }}
         <svg viewBox="0 0 14 22" fill="none" aria-hidden="true">
           <path d="M7 1 V19 M2 14 L7 20 L12 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
@@ -149,6 +178,7 @@
       <p class="tag">{{ tag }}</p>
     </div>
 
+    <div class="warm-flash" aria-hidden="true"></div>
     <div class="flash" aria-hidden="true"></div>
   </section>
 }

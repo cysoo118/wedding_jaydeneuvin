@@ -97,6 +97,17 @@ export const WEDDING = {
       'assets/photobooth/booth-3.jpg',
     ],
     stripCaption: '12 · 09 · 2026',
+    // The save-the-date card after the mirror: a heart of rose petals guests
+    // brush away to uncover the message. Time and place come from the first
+    // entry in `events` and from `location` below.
+    petals: {
+      enabled: true,
+      kicker: 'Save the date',
+      hint: 'Brush the petals to reveal',
+      heading: 'Join us to celebrate',
+      message: 'as we exchange our vows and begin our forever',
+      date: '12 September 2026',
+    },
     // Print everything in classic photo-booth black & white.
     monochrome: true,
   },

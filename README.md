@@ -30,13 +30,18 @@ Deploy the contents of `dist/heritage-invite/browser/` to any static host
 
 Guests land on a sealed, vertical ivory envelope of deeply embossed flowers,
 closed with a diagonal flap and a gold wax seal bearing your initials (and,
-optionally, your portrait in a pressed oval). A tap pops the seal, swings the
-flap open in 3D, and a gilded baroque mirror
+optionally, your portrait in a pressed oval). A tap makes the seal glow, light
+runs along the flap, and gold traces itself over every embossed flower; then
+the seal lifts away, the flap swings open in 3D in a burst of warm light, and a
+gilded baroque mirror
 slides out of the pocket and settles on a crushed-velvet wall, engraved with
 your names and date. Tapping the mirror fires a camera flash, the names fade,
 and a photo strip feeds out of the booth slot and develops frame by frame
-(tap again to tuck it back in). "View the invitation" then fades the booth
-away to reveal the rest of the site below.
+(tap again to tuck it back in). "Continue" brings up a save-the-date card
+with a heart of rose petals: guests brush the petals away with a finger (or
+the mouse) to uncover the message and date, the remaining petals gather into a
+heart wreath and petals start to fall. "View the invitation" then fades the
+booth away to reveal the rest of the site below.
 
 - **Your photos:** `src/assets/photobooth/` ships with labelled grey
   placeholders. Save your photos over them with the same file names:
@@ -56,9 +61,13 @@ away to reveal the rest of the site below.
   strip caption, photo paths).
 - **Plain envelope (seal only, no portrait):** set `photobooth.envelopePhoto`
   to `false`.
+- **Petal card:** wording lives in `photobooth.petals` (set `enabled: false`
+  to go straight from the mirror to the invitation); the time and place under
+  the heart come from the first entry in `events` and from `location`.
 - **Use the old video cover instead:** set `photobooth.enabled` to `false`.
 - The embossed paper, the wax seal and the mirror frame are pre-rendered
-  images, drawn as code in `tools/envelope-paper.html`, `tools/wax-seal.html`
+  images (the gold tracing is the paper's own flower layout redrawn as gold
+  outlines), drawn as code in `tools/envelope-paper.html`, `tools/wax-seal.html`
   and `tools/mirror-frame.html` (the seal's initials are live text, so they
   follow the names). To re-tint or redraw them, edit those files and run
   `node tools/render-photobooth-art.mjs` (needs Playwright + Python Pillow).
@@ -99,6 +108,7 @@ src/app/
   reveal.directive.ts    <- scroll-in animation
   components/
     photobooth.component.*   envelope -> mirror -> photo strip opening
+    petal-heart.component.ts brush-the-petals save-the-date card
     hero.component.ts        countdown.component.ts
     story.component.ts       celebration.component.ts
     gallery.component.ts     rsvp.component.ts
